@@ -129,6 +129,13 @@ public class SQLitePlugin extends CordovaPlugin {
                 }
                 break;
 
+            case dbFilePath:
+                o = args.getJSONObject(0);
+                dbname = o.getString("path");
+                File dbFile = getDBFilePath(dbname);
+                cbc.success(dbFile.getAbsolutePath());
+                break;
+
             case executeSqlBatch:
             case backgroundExecuteSqlBatch:
                 String[] queries = null;
@@ -197,17 +204,26 @@ public class SQLitePlugin extends CordovaPlugin {
             this.closeDatabase(dbname);
         }
 
-        File dbfile = this.cordova.getActivity().getDatabasePath(dbname);
-
-        if (!dbfile.exists()) {
-            dbfile.getParentFile().mkdirs();
-        }
+        File dbfile = getDBFilePath(dbname);
 
         Log.v("info", "Open sqlite db: " + dbfile.getAbsolutePath());
 
         SQLiteDatabase mydb = SQLiteDatabase.openOrCreateDatabase(dbfile, null);
 
         dbmap.put(dbname, mydb);
+    }
+
+    /**
+     * Get the absolute path of the db file
+     */
+    private File getDBFilePath(String dbname) {
+        File dbfile = this.cordova.getActivity().getDatabasePath(dbname);
+
+        if (!dbfile.exists()) {
+            dbfile.getParentFile().mkdirs();
+        }
+
+        return dbfile;
     }
 
     /**
@@ -742,6 +758,7 @@ public class SQLitePlugin extends CordovaPlugin {
         delete,
         executeSqlBatch,
         backgroundExecuteSqlBatch,
+        dbFilePath
     }
 
     private static enum QueryType {
