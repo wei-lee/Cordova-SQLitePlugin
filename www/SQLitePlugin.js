@@ -160,9 +160,16 @@
 
   SQLitePluginTransaction.prototype.start = function() {
     var err;
+    var that = this;
     try {
       this.fn(this);
-      this.run();
+      //when running on device, there seems to be a timing issue.
+      //For some reason, when the above function is called, the queries are not added to 
+      //the this.executes queue immediately. So when this.run is running, sometimes it could
+      //miss executing queries. So add a timeout here to make sure the queries will be added to the queue.
+      setTimeout(function(){
+        that.run();
+      }, 50);
     } catch (_error) {
       err = _error;
 
